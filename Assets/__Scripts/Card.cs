@@ -18,6 +18,13 @@ public class Card : MonoBehaviour {
     public GameObject back;  //The GOj of the back of card
     public CardDefinition def; //Parse from DeckXML.xml
 
+    public bool faceUp          //from page 684
+    {
+        get
+        {   return(!back.activeSelf);  }
+        set
+        {   back.SetActive(!value);    }
+    }
 
 	// Use this for initialization
 	void Start () {

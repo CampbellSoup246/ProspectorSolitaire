@@ -24,7 +24,7 @@ public class Deck : MonoBehaviour {
     public Sprite suitSpade;
 
     public Sprite[] faceSprites;
-    public Sprite[] randSprites;
+    public Sprite[] rankSprites;
 
     public Sprite cardBack;
     public Sprite cardBackGold;
@@ -45,7 +45,7 @@ public class Deck : MonoBehaviour {
             deckAnchor = anchorGO.transform;
         }
         //Initialize Dictionary of SuitSprites w/ necessary Sprites. Pg 680
-        dictSuits = new Dictionary<string, Sprite>
+        dictSuits = new Dictionary<string, Sprite>()
         {
             {"C", suitClub },
             {"D", suitDiamond },
@@ -201,6 +201,7 @@ public class Deck : MonoBehaviour {
             card.def = GetCardDefinitionByRank(card.rank);
 
             //Add Decorators
+            int testing = 0;  ///This is my thing trying to get stuff to appear.
             foreach(Decorator deco in decorators)
             {
                 if (deco.type == "suit")
@@ -245,10 +246,13 @@ public class Deck : MonoBehaviour {
                 tGO.name = deco.type;
                 //Add this deco GO to the List card.decoGOs
                 card.decoGOs.Add(tGO);
+                card.decoGOs[testing].SetActive(true);        //My thing to make stuff appear maybe.
+                testing++;                                    //Also still my thing.            I THINK IT ACTUALLY WORKS!!!
             }
 
             //Add Pips. THis stuff below from pg 683.
             //For each of the pips in the definition, Instantiate a Sprite GameObject
+            int testingPip = 0;                            //My stuff to make pips active
             foreach(Decorator pip in card.def.pips)
             {
                 tGO = Instantiate(prefabSprite) as GameObject;
@@ -276,7 +280,8 @@ public class Deck : MonoBehaviour {
                 tSR.sortingOrder = 1;
                 //Add this to the Card's list of pips
                 card.pipGOs.Add(tGO);
-               
+                card.pipGOs[testingPip].SetActive(true);    //More my stuff to make pips active
+                testingPip++;                               // Same ^
             }
 
 
@@ -292,7 +297,23 @@ public class Deck : MonoBehaviour {
                 tGO.transform.parent = card.transform;
                 tGO.transform.localPosition = Vector3.zero;
                 tGO.name = "face";
+                tGO.SetActive(true);                    //MY Thing to make these active.
             }
+
+            //Add Card Back pg 685
+            //The Card_Back will be able to cover everything else on the Card
+            tGO = Instantiate(prefabSprite) as GameObject;
+            tSR = tGO.GetComponent<SpriteRenderer>();
+            tSR.sprite = cardBack;
+            tGO.transform.parent = card.transform;
+            tGO.transform.localPosition = Vector3.zero;
+            //This is a higher sortingOrder than anything else
+            tSR.sortingOrder = 2;
+            tGO.name = "back";
+            card.back = tGO;
+
+            //Default to face-up
+            card.faceUp = true; //Use the property faceUp of card.  //Change this back to false when finished fixing! ******************
 
             //Add the card to the deck. Was here before the pg 683 stuff
             cards.Add(card);
@@ -316,4 +337,20 @@ public class Deck : MonoBehaviour {
     }
         /////PICK UP FROM PAGE 684 AND SEE IF THE CARDS ALIGN AND STUFF!!!! ***********************************
 
+    //Shuffle the Cards in Deck.cards  pg 686
+    static public void Shuffle(ref List<Card> oCards)  //The ref basically makes so if cards of a Deck passed in via refernece, cards will be shuffled w/o require return var.
+    {                                                   //More on page 686 ^
+        //Create a temporary List to hold the new shuffle order
+        List<Card> tCards = new List<Card>();
+        int ndx; //this will hold the index of the card to be moved
+        tCards = new List<Card>(); //Initialize the temporary List.
+        while(oCards.Count > 0) //Repeat as long as there are cards in the original List
+        {
+            ndx = Random.Range(0, oCards.Count); //Pick the index of a random card.
+            tCards.Add(oCards[ndx]); //Add that card to the temporary List
+            oCards.RemoveAt(ndx); //And remove that card from the original List
+        }
+        oCards = tCards; //Replace the ogiinal List with the temporary List
+        //Because oCards is a reference variable, the original that was passed in is changed as well.
+    }
 }
