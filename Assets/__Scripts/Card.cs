@@ -18,6 +18,13 @@ public class Card : MonoBehaviour {
     public GameObject back;  //The GOj of the back of card
     public CardDefinition def; //Parse from DeckXML.xml
 
+    public SpriteRenderer[] spriteRenderers; //List of the SpriteRenderer Components of this GameObject and its children. //From pg 701
+
+    void Start()
+    {
+        SetSortOrder(0); //ensure that the card starts properly depth sorted. //From pg 701
+    }
+
     public bool faceUp          //from page 684
     {
         get
@@ -26,15 +33,59 @@ public class Card : MonoBehaviour {
         {   back.SetActive(!value);    }
     }
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
+    public void PopulateSpriteRenderers() //If spriteRenderers is not yet defined, this function defines it. //Pg 702
+    {
+        if(spriteRenderers == null || spriteRenderers.Length == 0) //If spriteRenderers is null or empty
+        {
+            spriteRenderers = GetComponentsInChildren<SpriteRenderer>();  //Get SpriteRenderer Components of this GO and its children
+        }
+    }
+
+    public void SetSortingLayerName(string tSLN)    //Sets the sortingLayerName on all SPriteRenderer Components. //Pg 702
+    {
+        PopulateSpriteRenderers();
+        foreach(SpriteRenderer tSR in spriteRenderers)
+        {  tSR.sortingLayerName = tSLN;  }
+    }
+
+    public void SetSortOrder(int sOrd) //Sets the sortingOrder of all SpriteRenderer Componets
+    {
+        PopulateSpriteRenderers();
+
+        //The white background of card is on bottom (sOrd).
+        //On top of that are all the pips, decorators, face, etc. (sOrd+1)
+        //The back is on top s that when visible, it covers the rest (sOrd+2)
+
+        foreach(SpriteRenderer tSR in spriteRenderers) //Iterate thru all the spriteRenderers as tSR
+        {
+            if(tSR.gameObject == this.gameObject) //If the gameObject is this.gameObject, it's the background.
+            {
+                tSR.sortingOrder = sOrd; //Set its order to sOrd
+                continue; //And continue tot he next iteration of the loop.
+            }
+            //Each of the children ofthis GameObject are named
+            //switch based on the names
+            switch(tSR.gameObject.name)
+            {
+                case "back": //if name is "back"
+                    tSR.sortingOrder = sOrd + 2; //Set it to the highest layer to cover everything else
+                    break;
+                case "face": //if the name is "face"
+                default: //or if its anything else
+                    tSR.sortingOrder = sOrd + 1; // set it to the middle layer to be above the background
+                    break;
+            }
+        }
+    }
 	// Update is called once per frame
 	void Update () {
 	
 	}
+
+    virtual public void OnMouseUpAsButton() //Virtual methods can be overridden by subclass methods with the same name. //Pg 704. This allows cards to be clicked!
+    {
+        print(name); //When clicked, this outputs card name.
+    }
 }
 
 //Pg 668:
