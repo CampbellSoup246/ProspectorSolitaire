@@ -25,14 +25,10 @@ public class CardProspector : Card  //Making sure CardProspector extends Card!!!
         Prospector.S.CardClicked(this); //Call the CardClicked method on the Prospector singleton.
         base.OnMouseUpAsButton();  //Also call the base class (Card.cs) version of this method.
     }
-
     // Use this for initialization
-    void Start () {
-	
-	}
-	
+    void Start () {	
+	}	
 	// Update is called once per frame
-	void Update () {
-	
+	void Update () {	
 	}
 }

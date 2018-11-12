@@ -58,7 +58,7 @@ public class Card : MonoBehaviour {
 
         foreach(SpriteRenderer tSR in spriteRenderers) //Iterate thru all the spriteRenderers as tSR
         {
-            if(tSR.gameObject == this.gameObject) //If the gameObject is this.gameObject, it's the background.
+            if(tSR.gameObject == gameObject) //If the gameObject is this.gameObject, it's the background.
             {
                 tSR.sortingOrder = sOrd; //Set its order to sOrd
                 continue; //And continue tot he next iteration of the loop.

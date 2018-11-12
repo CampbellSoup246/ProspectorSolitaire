@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class Prospector : MonoBehaviour {
 
@@ -54,11 +55,18 @@ public class Prospector : MonoBehaviour {
         drawPile.RemoveAt(0); //Then remove it from List<> drawPile.
         return (cd);        //And return it
     }
-    //PICK UP HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CardProspector FindCardByLayoutID(int layoutID)  //Convert from the layoutID int to the CardProspector with that ID.  //Pg 709. 
     {
-
+        foreach (CardProspector tCP in tableau) //Search thru all cards in the tableau List<>
+        {
+            if (tCP.layoutID == layoutID)  //If card has same ID, return it
+            {
+                return (tCP);
+            }
+        }
+        return (null); //If it's not found,r eturn null
     }
+
     
     void LayoutGame() //LayoutGame() positions the initial tableau of cards, aka the "mine". //This method also from pg 698
     {
@@ -87,6 +95,16 @@ public class Prospector : MonoBehaviour {
             tableau.Add(cp); //Add this CardProspector to the List<> tableau.
 
         }
+
+        //This stuff from pg 709
+        foreach(CardProspector tCP in tableau) //Set which cards are hiding others)
+        {
+            foreach(int hid in tCP.slotDef.hiddenBy)
+            {
+                cp = FindCardByLayoutID(hid);
+                tCP.hiddenBy.Add(cp);
+            }
+        }   //End stuff from pg 709
 
         MoveToTarget(Draw()); //Set up the initial target card. //From pg 705
         UpdateDrawPile(); //Set up the Draw pile.
@@ -143,11 +161,16 @@ public class Prospector : MonoBehaviour {
                 bool validMatch = true;                                         //This and below pg 708.
                 if(!cd.faceUp)  //If it's not an adjacent rank, it's not valid
                 {  validMatch = false;   }
+                if(!AdjacentRank(cd, target))   //If it's not an adjacent rank, it's not valid.
+                { validMatch = false; } 
                 if (!validMatch) return; //Return if not valid
+                //Next two lines means it has to be valid.
                 tableau.Remove(cd); //If it's a valid card, Remove it from the tableau List.
                 MoveToTarget(cd);   //Make it the target card.                  //End pg 708 stuff.
+                SetTableauFaces(); //Update tableau card face-ups.      //From pg 709
                 break;
         }
+        CheckForGameOver(); //Check to see whether game is over or not.  Pg 710
     }
 
     void MoveToDiscard(CardProspector cd)  //Moves the current target to the discardPile. //From pg 706
@@ -162,6 +185,10 @@ public class Prospector : MonoBehaviour {
         cd.SetSortOrder(-100 + discardPile.Count);
 
     }
+
+    //My stuff to fix things not appearing in target card for pips and decos.
+    //public SpriteRenderer[] spriteRenderers;
+    //End my stuff
     void MoveToTarget(CardProspector cd)  //Make cd the new target card. //From pg 706
     {
         if (target != null) MoveToDiscard(target); //If there is currently a target card, move it to discardPile
@@ -174,8 +201,22 @@ public class Prospector : MonoBehaviour {
         //Set the depth sorting
         cd.SetSortingLayerName(layout.discardPile.layerName);
         cd.SetSortOrder(0);
-    }
-	
+        /*
+        //My stuff fix above "my stuff to fix..."
+        spriteRenderers = cd.GetComponentsInChildren<SpriteRenderer>();
+        foreach (SpriteRenderer tSR in spriteRenderers) //Iterate thru all the spriteRenderers as tSR
+        {
+            print("in the foreach loop");
+            if (tSR.gameObject == cd.gameObject) //If the gameObject is this.gameObject, it's the background.
+            {
+                print("Did this work");
+                tSR.sortingOrder = 0; //Set its order to sOrd
+                //continue; //And continue tot he next iteration of the loop.
+            }
+        }*/
+        //end my stuff
+        }
+
     void UpdateDrawPile() //Arranges all the cards of the drawPile to show how many are left. //From pg 706
     {
         CardProspector cd;
@@ -206,8 +247,52 @@ public class Prospector : MonoBehaviour {
         //Otherwise, return false
         return (false);
     }
-	// Update is called once per frame
-	void Update () {
 	
-	}
+    void SetTableauFaces()  //This turns cards in the Mine faceup or face down.     //Pg 710.
+    {
+        foreach (CardProspector cd in tableau)
+        {
+            bool fup = true; //Assume the card will be faceup
+            foreach (CardProspector cover in cd.hiddenBy) //If either of the covering cards are in the tableau
+            {
+                if (cover.state == CardState.tableau)
+                {
+                    fup = false;    //Then this card is facedown
+                }
+            }
+            cd.faceUp = fup; //Set the value on the card
+        }
+    }
+
+    void CheckForGameOver() //Testwheter game is over. Pg 710
+    {
+        if (tableau.Count == 0) //If tableau is empty, the game is over.
+        {
+            GameOver(true); //Call GameOver with a win
+            return;
+        }
+        if (drawPile.Count > 0) //If are still cards in draw pile, game's not over
+        {
+            return;
+        }
+        foreach (CardProspector cd in tableau) //Check for remaining valid plays.
+        {
+            if (AdjacentRank(cd, target))    //If there is a valid play, game's not over
+            {
+                return;
+            }
+        }
+        //Since there are no valid plays, game is over
+        GameOver(false); //Call GameOver with a loss. 
+    }
+
+    void GameOver(bool won) //Called when game is over. Simple for now, but expandable. Pg 711
+    {
+        if (won)
+        { print("Game Over. You won!"); }
+        else
+        { print("Game over. You lost."); }
+        SceneManager.LoadScene("__Prospector_Scene_0"); //Reload the scene, resetting the game
+
+    }
 }
