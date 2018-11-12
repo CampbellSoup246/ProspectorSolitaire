@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public enum ScoreEvent //An enum to handle all possible scoring events. pg712
 { 
@@ -16,6 +17,8 @@ public class Prospector : MonoBehaviour {
     static public Prospector S; //Singletons again.
     static public int SCORE_FROM_PREV_ROUND = 0;    //This one and below from pg 712
     static public int HIGH_SCORE = 0;
+
+    public float reloadDelay = 10f; //The delay between rounds. Page 724    //Changed from 1f to 10f b/c too quick!!
 
     //These 4 Vector3s from page 721 for scoreboard incorporation
     public Vector3 fsPosMid = new Vector3(0.5f,0.9f,0);
@@ -48,19 +51,41 @@ public class Prospector : MonoBehaviour {
 
     public FloatingScore fsRun; //Pg 721.
 
-
+    public Text GTGameOver;     //These two from pg 726
+    public Text GTRoundResult;
 
     void Awake()
     {
         S = this; //Set up a Singleton for Prospector
         //For scoring from page 712
-        if(PlayerPrefs.HasKey("ProspectorHighScore")) //Check for a high score in PlayerPrefs
+        if (PlayerPrefs.HasKey("ProspectorHighScore")) //Check for a high score in PlayerPrefs
         {
             HIGH_SCORE = PlayerPrefs.GetInt("ProspectorHighScore");
         }
         score += SCORE_FROM_PREV_ROUND; //Add the score from the last round, which will be >0 if it was a win
         SCORE_FROM_PREV_ROUND = 0; //And reset the thing.
+
+        //Below from page 726
+        //Set up the GUITexts that show at the end of the round								
+        //Get the GUIText Components								
+        GameObject go = GameObject.Find("GameOver");
+        if (go != null)
+        { GTGameOver = go.GetComponent<Text>(); }
+        go = GameObject.Find("RoundResult");
+        if (go != null) { GTRoundResult = go.GetComponent<Text>(); }
+        //Make them invisible					
+        ShowResultGTs(false);
+        go = GameObject.Find("HighScore");
+        string hScore = "High Score: " + Utils.AddCommasToNumber(HIGH_SCORE);
+        go.GetComponent<Text>().text = hScore;
     }
+
+    void ShowResultGTs(bool show)   //From pg 726
+    {
+        GTGameOver.gameObject.SetActive(show);
+        GTRoundResult.gameObject.SetActive(show);
+    }  
+    
 
 
     // Use this for initialization
@@ -332,8 +357,17 @@ public class Prospector : MonoBehaviour {
             //print("Game over. You lost."); 
             ScoreManager(ScoreEvent.gameLoss);
         }
-        SceneManager.LoadScene("__Prospector_Scene_0"); //Reload the scene, resetting the game
 
+        //Reload the scene in reloadDelay seconds. This will give score a moment to travel. //From pg 724, No longer need .LoadScene line.
+        Invoke("ReloadLevel", reloadDelay);
+
+        //SceneManager.LoadScene("__Prospector_Scene_0"); //Reload the scene, resetting the game
+
+    }
+
+    void ReloadLevel() //Reload the scene, resetting the game. From pg 724
+    {
+        SceneManager.LoadScene("__Prospector_Scene_0");
     }
 
     void ScoreManager(ScoreEvent sEvt) //ScoreManager handles all the scoring.   //Pg 713
@@ -390,19 +424,29 @@ public class Prospector : MonoBehaviour {
         switch (sEvt) //Second switch statement handles round wins and loss
         {
             case ScoreEvent.gameWin:
+                GTGameOver.text = "Round Over"; //From pg 727
                 //If a win, add score to next round
                 //sstatic fields are NOT reset by Application.LoadLevel().     //But will they be for .LoadScene()?????**************
                 Prospector.SCORE_FROM_PREV_ROUND = score;
                 print("You won the round! ROund score: " + score);
+                GTRoundResult.text = "You won this round! \nRound Score: " + score; //From pg 727
+                ShowResultGTs(true);                    //||
                 break;
             case ScoreEvent.gameLoss:
+                GTGameOver.text = "Game Over"; //From pg 727
                 if (Prospector.HIGH_SCORE <= score) //If its a loss, check against the high score
                 {
                     print("You got the high score! High score: " + score);
+                    string sRR = "You got the high score!\nHigh score: " + score; //From pg 727
+                    GTRoundResult.text = sRR;               //||
                     Prospector.HIGH_SCORE = score;
                     PlayerPrefs.SetInt("ProspectorHighScore", score);
                 }
-                else { print("Your final score for the game was: " + score); }
+                else {
+                    print("Your final score for the game was: " + score);
+                    GTRoundResult.text = "Your final score was: " + score; //From pg 727
+                }
+                ShowResultGTs(true); //From pg 727
                 break;
             default:
                 print("Score: " + score + "  scoreRun: " + scoreRun + "  Chain: " + chain);
