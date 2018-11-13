@@ -226,7 +226,14 @@ public class Prospector : MonoBehaviour {
                 tableau.Remove(cd); //If it's a valid card, Remove it from the tableau List.
                 MoveToTarget(cd);   //Make it the target card.                  //End pg 708 stuff.
                 SetTableauFaces(); //Update tableau card face-ups.      //From pg 709
-                ScoreManager(ScoreEvent.mine); //From pg 713 for score
+                if (cd.tag.Equals("goldCard"))                                      //MY STUFF to make gold card count as double chain value.
+                {
+                    ScoreManager(ScoreEvent.mineGold);
+                }
+                else
+                {
+                    ScoreManager(ScoreEvent.mine); //From pg 713 for score
+                }
                 break;
         }
         CheckForGameOver(); //Check to see whether game is over or not.  Pg 710
@@ -373,6 +380,7 @@ public class Prospector : MonoBehaviour {
     void ScoreManager(ScoreEvent sEvt) //ScoreManager handles all the scoring.   //Pg 713
     {
         List<Vector3> fsPts; //Pg 721
+        FloatingScore fs; //My stuff replacing these vars from ScoreEvent.mine to make room for mineGold one as well. COMMENT OUT IF NEEDED!!!
         switch(sEvt)    //same things need to happen whether its a draw, a win, or a loss. Hence why they are the same
         {
             case ScoreEvent.draw: //Drawing a card
@@ -400,7 +408,7 @@ public class Prospector : MonoBehaviour {
                 chain++; //increase score chain
                 scoreRun += chain; //add score for this card to run
                 //Below from pg 721. 	//	Create	a	FloatingScore	for	this	score
-                FloatingScore	fs;
+                //FloatingScore	fs;     //Commented out from my stuff up above in top of ScoreManager. COMMENT OUT IF NEED
                 //	Move	it	from	the	mousePosition	to	fsPosRun			
                 Vector3 p0 = Input.mousePosition;
                 p0.x /= Screen.width;
@@ -418,6 +426,31 @@ public class Prospector : MonoBehaviour {
                 }
                 else
                 { fs.reportFinishTo = fsRun.gameObject; }                
+                break;
+            case ScoreEvent.mineGold:
+                chain++; //increase score chain
+                //chain *= 2;
+                //scoreRun += chain; //add score for this card to run
+                scoreRun *= 2;      //Replaces above code to instead double value of the run.
+                //Below from pg 721. 	//	Create	a	FloatingScore	for	this	score
+                //FloatingScore fs2;
+                //	Move	it	from	the	mousePosition	to	fsPosRun			
+                Vector3 p02 = Input.mousePosition;
+                p02.x /= Screen.width;
+                p02.y /= Screen.height;
+                fsPts = new List<Vector3>();
+                fsPts.Add(p02);
+                fsPts.Add(fsPosMid);
+                fsPts.Add(fsPosRun);
+                fs = Scoreboard.S.CreateFloatingScore(chain, fsPts);
+                fs.fontSizes = new List<float>(new float[] { 4, 50, 28 });
+                if (fsRun == null)
+                {
+                    fsRun = fs;
+                    fsRun.reportFinishTo = null;
+                }
+                else
+                { fs.reportFinishTo = fsRun.gameObject; }
                 break;
         }
 
