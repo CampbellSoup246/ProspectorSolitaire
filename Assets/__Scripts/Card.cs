@@ -71,7 +71,10 @@ public class Card : MonoBehaviour {
                     tSR.sortingOrder = sOrd + 2; //Set it to the highest layer to cover everything else
                     break;
                 case "face": //if the name is "face"
-                default: //or if its anything else
+                //default: //or if its anything else.                               //UNCOMMENT AND DELETE BELOW CASES IF THIS DOESNT FIX TARGET CARDS NOT SHOWING
+                case "pip":                         //My stuff to fix target card not showing. See above ^
+                case "letter":                      // ||
+                case "suit":                        // ||
                     tSR.sortingOrder = sOrd + 1; // set it to the middle layer to be above the background
                     break;
             }
@@ -97,8 +100,6 @@ public class Decorator
     public Vector3 loc; // Location of sprite on card
     public bool flip = false;  //whther to flip spirte vertically.
     public float scale = 1f; //the scale of the Sprie.
-
-
 }
 
 [System.Serializable]
