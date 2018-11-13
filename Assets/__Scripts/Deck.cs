@@ -34,6 +34,10 @@ public class Deck : MonoBehaviour {
     public GameObject prefabSprite;
     public GameObject prefabCard;
 
+    //My stuff for gold cards.
+    public GameObject prefabCardGold;
+    System.Random rnd = new System.Random();
+
 
     //InitDeck called by Prospector when its ready
     public void InitDeck(string deckXMLText)
@@ -181,8 +185,20 @@ public class Deck : MonoBehaviour {
         //Iterate thru all the card names that were just made.
         for (int i = 0; i<cardNames.Count; i++)
         {
+            //My random generator stuff to make card gold, COMMENT OUT IF NECESSARY
+            int chance = rnd.Next(0, 10);
+
             //Create a new Card GameObject
-            GameObject cgo = Instantiate(prefabCard) as GameObject;
+            GameObject cgo = null;
+            //GameObject cgo = Instantiate(prefabCard) as GameObject;
+            if (chance == 0)
+            {
+                cgo = Instantiate(prefabCardGold) as GameObject;     //My stuff for make card gold, COMMENT OUT THIS, IF AND ELSE IF NECESSARY
+            }
+            else
+            {
+                cgo = Instantiate(prefabCard) as GameObject;
+            }
             //Set the transform.parent of new card to the achor
             cgo.transform.parent = deckAnchor;
             Card card = cgo.GetComponent<Card>();
@@ -252,7 +268,7 @@ public class Deck : MonoBehaviour {
 
             //Add Pips. THis stuff below from pg 683.
             //For each of the pips in the definition, Instantiate a Sprite GameObject
-            int testingPip = 0;                            //My stuff to make pips active
+            //int testingPip = 0;                            //My stuff to make pips active         //See below why commented out.
             foreach(Decorator pip in card.def.pips)
             {
                 tGO = Instantiate(prefabSprite) as GameObject;
@@ -280,8 +296,8 @@ public class Deck : MonoBehaviour {
                 tSR.sortingOrder = 1;
                 //Add this to the Card's list of pips
                 card.pipGOs.Add(tGO);
-                card.pipGOs[testingPip].SetActive(true);    //More my stuff to make pips active
-                testingPip++;                               // Same ^
+                //card.pipGOs[testingPip].SetActive(true);    //More my stuff to make pips active.    //LITERALLY only reason i needed to do this, PrefabSprite was disabled
+                //testingPip++;                               // Same ^                             //See above.
             }
 
 
@@ -302,9 +318,19 @@ public class Deck : MonoBehaviour {
 
             //Add Card Back pg 685
             //The Card_Back will be able to cover everything else on the Card
-            tGO = Instantiate(prefabSprite) as GameObject;
+
+            //My stuff below for gold card
+           tGO = Instantiate(prefabSprite) as GameObject;
             tSR = tGO.GetComponent<SpriteRenderer>();
-            tSR.sprite = cardBack;
+            if (chance == 0)
+            {
+                tSR.sprite = cardBackGold;
+            }
+            else
+            {
+                tSR.sprite = cardBack;
+            }
+            //End my stuff (delete the else statement if delete rest of the My stuff.
             tGO.transform.parent = card.transform;
             tGO.transform.localPosition = Vector3.zero;
             //This is a higher sortingOrder than anything else
