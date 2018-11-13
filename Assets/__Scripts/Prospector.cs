@@ -366,7 +366,7 @@ public class Prospector : MonoBehaviour {
         }
 
         //Reload the scene in reloadDelay seconds. This will give score a moment to travel. //From pg 724, No longer need .LoadScene line.
-        Invoke("ReloadLevel", reloadDelay);
+        Invoke("ReloadLevel", 5);// reloadDelay);
 
         //SceneManager.LoadScene("__Prospector_Scene_0"); //Reload the scene, resetting the game
 
